@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/conf/de.joerghoh.aem" mode="merge"/>
+    <filter root="/content/de.joerghoh.aem" mode="merge"/>
+    <filter root="/content/dam/de.joerghoh.aem" mode="merge"/>
+    <filter root="/content/experience-fragments/de.joerghoh.aem" mode="merge"/>
+</workspaceFilter>
