@@ -15,29 +15,9 @@
  */
 package integrationtests.it.tests;
 
-import com.adobe.cq.testing.client.CQClient;
-import com.adobe.cq.testing.junit.assertion.CQAssert;
-import com.adobe.cq.testing.junit.rules.CQAuthorClassRule;
-import com.adobe.cq.testing.junit.rules.CQAuthorPublishClassRule;
-import com.adobe.cq.testing.junit.rules.CQRule;
-import com.adobe.cq.testing.junit.rules.Page;
-
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.SlingHttpResponse;
-import org.eclipse.jetty.client.HttpResponse;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.slf4j.LoggerFactory;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,82 +25,98 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.jsoup.nodes.Document;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.slf4j.LoggerFactory;
+
+import com.adobe.cq.testing.client.CQClient;
+import com.adobe.cq.testing.junit.rules.CQAuthorClassRule;
+import com.adobe.cq.testing.junit.rules.CQRule;
+
 /**
- * Validates pages on publish and makes sure that the page renders completely and also
- * validates all linked resources (images, clientlibs etc).
+ * Performs basic validation on the WKND page on author
  * 
  */
-public class PublishPageValidationIT {
+public class AuthorHomepageValidationIT {
 
 
     // the page to test
-    private static final String HOMEPAGE = "/";
+    private static final String HOMEPAGE = "/content/wknd/language-masters/en.html";
+    
+    private static final String[] ZEROBYTEFILES = new String[] {
+            "/etc.clientlibs/wcm/foundation/clientlibs/main.min.js"
+            };
 
-    // list files which do return a zerobyte response body
-    private static final List<String> ZEROBYTEFILES = Arrays.asList();
+    private static final List<String> ZEROBYTE_CLIENTLIBS = Arrays.asList(ZEROBYTEFILES);
 
-
-
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PublishPageValidationIT.class);
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthorHomepageValidationIT.class);
 
     @ClassRule
-    public static CQAuthorPublishClassRule cqBaseClassRule = new CQAuthorPublishClassRule(true);
+    public static CQAuthorClassRule cqBaseClassRule = new CQAuthorClassRule(true);
 
     @Rule
-    public CQRule cqBaseRule = new CQRule(cqBaseClassRule.publishRule);
+    public CQRule cqBaseRule = new CQRule(cqBaseClassRule.authorRule);
 
-    private static HtmlUnitClient adminPublish;
+    private static JsoupClient adminAuthor;
 
     @BeforeClass
     public static void beforeClass() throws ClientException {
 
-        adminPublish = cqBaseClassRule.publishRule.getAdminClient(CQClient.class).adaptTo(HtmlUnitClient.class);
+        adminAuthor = cqBaseClassRule.authorRule.getAdminClient(CQClient.class).adaptTo(JsoupClient.class);
     }
 
     @AfterClass
     public static void afterClass() {
-        closeQuietly(adminPublish);
+        closeQuietly(adminAuthor);
     }
 
 
 
     @Test
     public void validateHomepage() throws ClientException, IOException, URISyntaxException {
-        String path = HOMEPAGE;
-        verifyPage(adminPublish, path);
-        verifyLinkedResources(adminPublish,path);
+        Document validatedPage = loadPage(adminAuthor, HOMEPAGE);
+        verifyLinkedResources(adminAuthor,validatedPage);
 
     }
 
 
-    private static void verifyPage (HtmlUnitClient client, String path) throws ClientProtocolException, IOException {
+    private static Document loadPage (JsoupClient client, String path) throws ClientException  {
         URI baseURI = client.getUrl();
-        LOG.info("Using {} as baseURL", baseURI.toString());
         HttpGet get = new HttpGet(baseURI.toString() + path);
-        org.apache.http.HttpResponse validationResponse = client.execute(get);
+        SlingHttpResponse validationResponse = client.doRequest(get,null,200);
         assertEquals("Request to [" + get.getURI().toString() + "] does not return expected returncode 200",
                 200, validationResponse.getStatusLine().getStatusCode());
+        Document homepage = client.getPage(validationResponse);
+        assertEquals("Unexpected page title","WKND Adventures and Travel",homepage.getElementsByTag("title").text());
+        return homepage;
     }
 
-    private static void verifyLinkedResources(HtmlUnitClient client, String path) throws ClientException, IOException, URISyntaxException {
+    private static void verifyLinkedResources(JsoupClient client, Document doc) throws ClientException {
 
-        List<URI> references = client.getResourceRefs(path);
-        assertTrue(path + " does not contain any references!", references.size() > 0);
+        
+        List<URI> references = client.getReferencedResources(doc);
+        assertTrue("document does not contain any references!", references.size() > 0);
         for (URI ref : references ) {
             if (isSameOrigin(client.getUrl(), ref)) {
-                LOG.info("verifying linked resource {}", ref.toString());
                 SlingHttpResponse response = client.doGet(ref.getRawPath());
                 int statusCode = response.getStatusLine().getStatusCode();
                 int responseSize = response.getContent().length();
                 assertEquals("Unexpected status returned from [" + ref + "]", 200, statusCode);
-                if (! ZEROBYTEFILES.stream().anyMatch(s -> ref.getPath().startsWith(s))) {
+                if (! ZEROBYTE_CLIENTLIBS.stream().allMatch(s -> s.startsWith(ref.getPath()))) {
                     assertTrue("Empty response body from [" + ref + "]", responseSize > 0);
                 }
-
             } else {
-                LOG.info("skipping linked resource from another domain {}", ref.toString());
+                LOG.info("skipping linked resource from another domain: {}", ref.toString());
             }
         }
+        LOG.info("validated {} linked resources", references.size());
     }
 
     /** Checks if two URIs have the same origin.

@@ -20,10 +20,14 @@ import com.adobe.cq.testing.junit.assertion.CQAssert;
 import com.adobe.cq.testing.junit.rules.CQAuthorClassRule;
 import com.adobe.cq.testing.junit.rules.CQRule;
 import com.adobe.cq.testing.junit.rules.Page;
+
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -69,6 +73,11 @@ public class CreatePageIT {
     @BeforeClass
     public static void beforeClass() {
         adminAuthor = cqBaseClassRule.authorRule.getAdminClient(CQClient.class);
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        closeQuietly(adminAuthor);
     }
 
     @Test
