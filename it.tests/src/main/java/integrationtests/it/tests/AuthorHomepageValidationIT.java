@@ -19,9 +19,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,7 +45,7 @@ import com.adobe.cq.testing.junit.rules.CQRule;
 public class AuthorHomepageValidationIT {
 
 
-    // the page to test
+    // use the WKND english master as test item
     private static final String HOMEPAGE = "/content/wknd/language-masters/en.html";
     
     private static final String[] ZEROBYTEFILES = new String[] {
@@ -60,9 +58,6 @@ public class AuthorHomepageValidationIT {
 
     @ClassRule
     public static CQAuthorClassRule cqBaseClassRule = new CQAuthorClassRule(true);
-
-    @Rule
-    public CQRule cqBaseRule = new CQRule(cqBaseClassRule.authorRule);
 
     private static JsoupClient adminAuthor;
 
@@ -79,8 +74,9 @@ public class AuthorHomepageValidationIT {
 
 
 
+    // verify that the homepage is rendered correctly and all links are working
     @Test
-    public void validateHomepage() throws ClientException, IOException, URISyntaxException {
+    public void validateHomepage() throws ClientException {
         Document validatedPage = loadPage(adminAuthor, HOMEPAGE);
         verifyLinkedResources(adminAuthor,validatedPage);
 
