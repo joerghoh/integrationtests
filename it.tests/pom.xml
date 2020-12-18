@@ -59,7 +59,7 @@
 
     <profiles>
         <profile>
-            <id>local</id>
+            <id>eaas-local</id>
             <properties>
                 <!-- Cloud author service (LB) -->
                 <it.author.url>http://localhost:6602</it.author.url>
@@ -67,16 +67,15 @@
                 <it.author.password>admin</it.author.password>
 
                 <!-- cloud publish service (LB) -->
-                <it.publish.url>http://localhost:4503</it.publish.url>
-                <it.publish.user>admin</it.publish.user>
-                <it.publish.password>admin</it.publish.password>
+                <it.publish.url>http://localhost:8080</it.publish.url>
+                <it.publish.user></it.publish.user>
+                <it.publish.password></it.publish.password>
             </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.21.0</version>
                         <configuration>
                             <skip>true</skip>
                         </configuration>
@@ -84,7 +83,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.21.0</version>
                         <configuration>
                             <testSourceDirectory>${basedir}/src/main/java/</testSourceDirectory>
                             <testClassesDirectory>${project.build.directory}/classes/</testClassesDirectory>
@@ -95,7 +93,7 @@
                                 <it.logintokenauth>true</it.logintokenauth>
 
                                 <!-- Sling Testing Tools properties for configuring the test instances -->
-                                <sling.it.instances>1</sling.it.instances>
+                                <sling.it.instances>2</sling.it.instances>
 
                                 <!-- Author service -->
                                 <sling.it.instance.url.1>${it.author.url}</sling.it.instance.url.1>
