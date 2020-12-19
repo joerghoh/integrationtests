@@ -2,7 +2,6 @@ package integrationtests.it.tests;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -10,25 +9,16 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.SlingClientConfig;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.adobe.cq.testing.client.CQClient;
 import com.adobe.cq.testing.junit.rules.CQAuthorPublishClassRule;
-import com.adobe.cq.testing.junit.rules.CQPublishClassRule;
-import com.adobe.cq.testing.junit.rules.CQRule;
 
 /**
  * Test the redirects on publish
@@ -64,7 +54,7 @@ public class PublishRedirectsIT {
     }
     
     @Test
-    public void testHomepage() throws ClientProtocolException, IOException, ClientException {
+    public void testInitialRedirectAndHomepage() throws ClientProtocolException, IOException, ClientException {
         assertPermanentRedirect("/", "/content/wknd/us/en.html");
         assertStatuscode( 200, "/us/en.html");
     }
