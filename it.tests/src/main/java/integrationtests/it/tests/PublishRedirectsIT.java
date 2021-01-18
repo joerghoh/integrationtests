@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.adobe.cq.testing.junit.rules.CQAuthorPublishClassRule;
 
 /**
- * Test the redirects on publish
+ * Test the statuscodes of various requests on publish
  *
  */
 public class PublishRedirectsIT {
