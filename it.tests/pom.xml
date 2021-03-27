@@ -67,9 +67,9 @@
                 <it.author.password>admin</it.author.password>
 
                 <!-- cloud publish service (LB) -->
-                <it.publish.url>http://localhost:8080</it.publish.url>
-                <it.publish.user></it.publish.user>
-                <it.publish.password></it.publish.password>
+                <it.publish.url>http://localhost:4503</it.publish.url>
+                <it.publish.user>admin</it.publish.user>
+                <it.publish.password>admin</it.publish.password>
             </properties>
             <build>
                 <plugins>

@@ -9,6 +9,7 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingHttpResponse;
@@ -55,7 +56,7 @@ public class PublishRedirectsIT {
     
     @Test
     public void testInitialRedirectAndHomepage() throws ClientProtocolException, IOException, ClientException {
-        assertPermanentRedirect("/", "/content/wknd/us/en.html");
+        assertPermanentRedirect("/", "/us/en.html");
         assertStatuscode( 200, "/us/en.html");
     }
     
@@ -80,7 +81,8 @@ public class PublishRedirectsIT {
     private void assertPermanentRedirect(String from, String to) throws  ClientException {
         SlingHttpResponse response = anonymouspublish.doGet(from, ALL_STATUSCODES);
         assertEquals("request to ["+from+"] did not return a permanent redirect: ", HttpServletResponse.SC_MOVED_PERMANENTLY,response.getStatusLine().getStatusCode());
-        assertTrue("request to ["+from+"] did not redirect to the expected location: ", response.getLastHeader("Location").getValue().endsWith(to));
+        String location =  response.getFirstHeader(HttpHeaders.LOCATION).getValue();
+        assertTrue("request to ["+from+"] did not redirect to the expected location ["+to+"], but to "+ location, location.endsWith(to) );
     }
     
     
