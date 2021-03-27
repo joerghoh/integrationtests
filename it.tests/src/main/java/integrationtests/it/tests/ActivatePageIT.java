@@ -1,5 +1,6 @@
 package integrationtests.it.tests;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.junit.rules.instance.Instance;
 import org.codehaus.jackson.JsonNode;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -51,6 +53,12 @@ public class ActivatePageIT {
         replicationClient = adminAuthor.adaptTo(ReplicationClient.class);
     }
     
+    @AfterClass
+    public static void afterClass() {
+        closeQuietly(adminAuthor);
+        closeQuietly(adminPublish);
+        closeQuietly(replicationClient);
+    }
     
     @Test
     public void replicatePage() throws ClientException, TimeoutException, InterruptedException {
